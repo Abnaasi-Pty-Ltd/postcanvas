@@ -1,6 +1,6 @@
-# JP Carousel Studio v4
+# PostCanvas
 
-A local-first LinkedIn carousel post studio that runs in Chrome as a single HTML file. Outputs 1200x1200px PNG slides ready for LinkedIn document post upload.
+An open-source, local-first carousel post studio that runs in Chrome as a single HTML file. Design multi-slide LinkedIn carousels with 14 themes, 17 content block types, and 10 background styles — then export as print-ready PNGs. No server, no sign-up, no dependencies beyond a browser.
 
 ## Quick Start
 
@@ -13,13 +13,16 @@ A local-first LinkedIn carousel post studio that runs in Chrome as a single HTML
 - **17 content block types** — sub-text, body text, stat rows, bullet boxes, numbered steps, code blocks, comparison columns, grid cards, CTA boxes, quotes, tag pills, images, highlight bars, flow diagrams, and more
 - **Modular block system** — add, remove, and reorder blocks freely on each slide (up to 4 per slide)
 - **14 themes** — Dark Editorial, Warm Cream, Deep Navy, Chalk, Pitch Black, Luxury Gold, Saffron, Forest, Linen Tutorial, Linen Minimal, Magazine, Breaking News, Tech Dark, Burgundy
+- **5 canvas sizes** — Square (1:1), Portrait (4:5), Story (9:16), Landscape (16:9), A4/Document
+- **12 slide templates** — pre-built layouts for hooks, stats, steps, comparisons, CTAs, and more
 - **10 background styles** — plain, grid, dots, 3D shapes, circles, gradient, glow, multi-glow, diagonal lines, noise
 - **Gradient/glow builder** — 3 colour pickers, opacity slider, direction control, 8 preset glow swatches
 - **8 headline fonts** — Playfair Display, Fraunces, Bebas Neue, Syne, Outfit, DM Serif Display, Inter, Space Grotesk
 - **Per-slide theme override** — each slide can use the global theme or its own
+- **Per-block font size** — fine-tune text size on sub-text and body-text blocks
 - **Drag to reorder** slides via tabs
 - **Image upload** — base64 encoded, renders in canvas, exports correctly
-- **PNG export** — html2canvas at 2.6x scale (~1200x1200px output)
+- **PNG export** — html2canvas with dynamic scaling per canvas size
 - **Draft system** — save/load from localStorage, export/import as JSON
 - **Dark/light mode** for the studio UI
 - **Keyboard shortcuts** — arrows navigate, 1-9 jump, S save, D dark/light, E export
@@ -31,7 +34,7 @@ Deploy to GitHub Pages:
 1. Push this repo to GitHub
 2. Go to Settings > Pages
 3. Set source to "Deploy from a branch" > main > / (root)
-4. Access at `https://[username].github.io/jp-carousel-studio/`
+4. Access at `https://[username].github.io/postcanvas/`
 
 ## No Dependencies
 
@@ -40,3 +43,11 @@ Everything runs from a single `index.html` file. Libraries loaded from CDN:
 - Google Fonts
 
 No build step required.
+
+## Credits
+
+Built by [Abnaasi Pty Ltd](https://abnaasi.com.au)
+
+## Licence
+
+MIT

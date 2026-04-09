@@ -1,9 +1,10 @@
+<!-- PostCanvas — Open Source Carousel Studio by Abnaasi Pty Ltd (abnaasi.com.au) -->
 <!DOCTYPE html>
 <html lang="en" data-mode="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JP Carousel Studio v4</title>
+<title>PostCanvas</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=Syne:wght@700;800&family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,wght@0,800;1,800&family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -112,7 +113,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;hei
 <body>
 
 <div class="topbar">
-  <div class="brand">&#9670; JP Carousel Studio v4</div>
+  <div class="brand">&#9670; PostCanvas</div>
   <div class="tb-r">
     <button class="btn bg" onclick="showDrafts()">Drafts</button>
     <button class="btn bgreen" onclick="saveDraft()">Save</button>
@@ -133,9 +134,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;hei
   <div class="psec">
     <div class="ptit">Profile</div>
     <label class="lbl">Handle / name</label>
-    <input class="fi" id="f-handle" value="Jagminder Singh &middot; CTO &amp; Founder" oninput="S.handle=this.value;renderCanvas()">
+    <input class="fi" id="f-handle" value="Your Name &middot; Your Title" oninput="S.handle=this.value;renderCanvas()">
     <label class="lbl">Category tag</label>
-    <input class="fi" id="f-tag" value="JP Singh" oninput="S.tag=this.value;renderCanvas()">
+    <input class="fi" id="f-tag" value="Your Brand" oninput="S.tag=this.value;renderCanvas()">
   </div>
 
   <div class="psec">
@@ -355,26 +356,26 @@ function newBlock(type) {
 
 // ==================== STATE ====================
 let S = {
-  handle:'Jagminder Singh \u00b7 CTO & Founder',
-  tag:'JP Singh',
+  handle:'Your Name \u00b7 Your Title',
+  tag:'Your Brand',
   theme:'dark-editorial',
   bg:'plain',
   font:'Playfair Display',
   cur:0,
   slides:[
-    { headline:"I spent 15 years building other people's tech. Then I built my own.", accent:'own.', themeOverride:null, blocks:[
-      {type:'sub-text',text:"Nobody teaches you what changes when you cross from CTO to founder. Here's what I learned.",bold:'Nobody teaches you'}
+    { headline:'The one satisfying change that made all the difference.', accent:'all the difference.', themeOverride:null, blocks:[
+      {type:'sub-text',text:'Most people overlook this. Here is what actually works.',bold:'Most people overlook this.'}
     ]},
-    { headline:'The gap nobody talks about.', accent:'nobody', themeOverride:null, blocks:[
-      {type:'sub-text',text:'Most tech leaders never see this coming.',bold:''},
-      {type:'stat-row',v1:'15 yrs',l1:'Building for others',v2:'Day 1',l2:'Everything changes',v3:'90%',l3:'Founders miss this'}
+    { headline:'The numbers speak for themselves.', accent:'speak', themeOverride:null, blocks:[
+      {type:'sub-text',text:'Real results from a real strategy.',bold:''},
+      {type:'stat-row',v1:'3\u00d7',l1:'More engagement',v2:'50%',l2:'Less effort',v3:'10K',l3:'Reached per post'}
     ]},
-    { headline:'Three moves that changed everything.', accent:'changed', themeOverride:null, blocks:[
-      {type:'bullet-box',label:'What actually works',b1:'Stop solving technical problems. Sell the outcome',b2:'Your credibility is the product \u2014 document it publicly',b3:'One decision framework replaces a hundred meetings'}
+    { headline:'Three steps to get started today.', accent:'today.', themeOverride:null, blocks:[
+      {type:'bullet-box',label:'What works',b1:'Pick one topic you know deeply',b2:'Write the post your audience needs \u2014 not the one you want',b3:'Show up consistently for 30 days'}
     ]},
-    { headline:'Your tech career is the unfair advantage.', accent:'unfair advantage.', themeOverride:null, blocks:[
-      {type:'sub-text',text:'I help founders who came from tech build the presence their expertise deserves.',bold:''},
-      {type:'cta-box',keyword:'FOUNDER',hint:'comment this word',subHint:"I'll DM you the framework"}
+    { headline:'Ready to start creating?', accent:'creating?', themeOverride:null, blocks:[
+      {type:'sub-text',text:'Build your personal brand one post at a time.',bold:''},
+      {type:'cta-box',keyword:'START',hint:'comment this word',subHint:"I'll send you the guide"}
     ]}
   ]
 };
@@ -936,7 +937,7 @@ function renderCaption() {
   const bulletBlock=S.slides.flatMap(s=>s.blocks).find(b=>b.type==='bullet-box');
   const bullets=bulletBlock?`\n${bulletBlock.b1||''}\n${bulletBlock.b2||''}\n${bulletBlock.b3||''}`:'';
   const kw=ctaBlock?ctaBlock.keyword:'FOLLOW';
-  document.getElementById('licap').textContent=`${s0.headline||''}\n\n${S.slides[0]?.blocks.find(b=>b.type==='sub-text')?.text||''}${bullets}\n\nComment ${kw} and I'll DM you the framework.\n\n#CTOLife #FounderJourney #MelbourneTech #TechLeadership`;
+  document.getElementById('licap').textContent=`${s0.headline||''}\n\n${S.slides[0]?.blocks.find(b=>b.type==='sub-text')?.text||''}${bullets}\n\nComment ${kw} and I'll DM you the framework.\n\n#LinkedInTips #ContentCreation #PersonalBrand`;
 }
 
 function renderAll() {
@@ -1078,7 +1079,7 @@ async function exportCurrentSlide() {
     const cv=await captureSlide(S.cur);
     const lbl=S.slides[S.cur].blocks.length?(SLIDE_LABELS[S.slides[S.cur].blocks[0].type]||'slide'):'slide';
     const link=document.createElement('a');
-    link.download=`jp-slide-${String(S.cur+1).padStart(2,'0')}-${lbl.toLowerCase()}.png`;
+    link.download=`postcanvas-slide-${String(S.cur+1).padStart(2,'0')}-${lbl.toLowerCase()}.png`;
     link.href=cv.toDataURL('image/png');
     link.click();
     toast(`Slide ${S.cur+1} exported!`);
@@ -1101,7 +1102,7 @@ async function exportAllSlides() {
       const cv=await captureSlide(i);
       const slbl=S.slides[i].blocks.length?(SLIDE_LABELS[S.slides[i].blocks[0].type]||'slide'):'slide';
       const link=document.createElement('a');
-      link.download=`jp-slide-${String(i+1).padStart(2,'0')}-${slbl.toLowerCase()}.png`;
+      link.download=`postcanvas-slide-${String(i+1).padStart(2,'0')}-${slbl.toLowerCase()}.png`;
       link.href=cv.toDataURL('image/png');
       link.click();
       await new Promise(r=>setTimeout(r,500));
@@ -1118,7 +1119,7 @@ async function exportAllSlides() {
 
 // ==================== DRAFT JSON EXPORT / IMPORT ====================
 function exportDraftJSON() {
-  const name=(document.getElementById('dname').value||'').trim()||'jp-carousel-draft-'+new Date().toISOString().slice(0,10);
+  const name=(document.getElementById('dname').value||'').trim()||'postcanvas-draft-'+new Date().toISOString().slice(0,10);
   const data=JSON.stringify({name,exportedAt:new Date().toISOString(),state:S,gradientState:GS},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const link=document.createElement('a');
@@ -1156,8 +1157,8 @@ function handleImportJSON(input) {
 }
 
 // ==================== DRAFT MANAGEMENT ====================
-function getDrafts(){try{return JSON.parse(localStorage.getItem('jp-v4-drafts')||'[]');}catch{return[];}}
-function setDrafts(d){localStorage.setItem('jp-v4-drafts',JSON.stringify(d));}
+function getDrafts(){try{return JSON.parse(localStorage.getItem('postcanvas-drafts')||'[]');}catch{return[];}}
+function setDrafts(d){localStorage.setItem('postcanvas-drafts',JSON.stringify(d));}
 
 function saveDraft() {
   const n=(document.getElementById('dname').value||'').trim()||'Draft '+new Date().toLocaleDateString();
