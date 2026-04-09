@@ -535,10 +535,10 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
   <div class="psec">
     <div class="ptit">Caption Editor</div>
     <div class="cap-toolbar">
-      <button class="cap-tbtn" onclick="capFormat('bold')" title="Bold (Unicode)"><b>B</b></button>
-      <button class="cap-tbtn" onclick="capFormat('italic')" title="Italic (Unicode)"><i>I</i></button>
-      <button class="cap-tbtn" onclick="capInsert('\u2022 ')" title="Bullet point">&bull;</button>
-      <button class="cap-tbtn" onclick="capInsert(String.fromCharCode(10))" title="Line break">&crarr;</button>
+      <button class="cap-tbtn" onmousedown="event.preventDefault()" onclick="capFormat('bold')" title="Bold (Unicode)"><b>B</b></button>
+      <button class="cap-tbtn" onmousedown="event.preventDefault()" onclick="capFormat('italic')" title="Italic (Unicode)"><i>I</i></button>
+      <button class="cap-tbtn" onmousedown="event.preventDefault()" onclick="capInsert('\u2022 ')" title="Bullet point">&bull;</button>
+      <button class="cap-tbtn" onmousedown="event.preventDefault()" onclick="capInsert(String.fromCharCode(10))" title="Line break">&crarr;</button>
     </div>
     <textarea class="cap-textarea" id="cap-text" placeholder="Write your LinkedIn caption here..." oninput="updateCapCounter();S.caption=this.value;updateCapPreview()"></textarea>
     <div class="cap-counter" id="cap-counter">0 / 3,000</div>
