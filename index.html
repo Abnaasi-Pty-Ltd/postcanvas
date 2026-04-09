@@ -525,9 +525,6 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
     <button class="expbtn exp-one" onclick="exportCurrentSlide()">&#11015; Export This Slide (PNG)</button>
     <button class="expbtn exp-all" onclick="exportAllSlides()">&#11015; Export All Slides</button>
   </div>
-  <div class="exprow">
-    <button class="expbtn" id="preview-btn" onclick="togglePreview()" style="flex:1;background:var(--bg3);color:var(--text);border:1px solid var(--border)">&#9654; Preview</button>
-  </div>
 </div>
 
 <!-- RIGHT PANEL -->
@@ -1910,22 +1907,6 @@ function goSlide(n) {
 function next(){goSlide(S.cur+1)}
 function prev(){goSlide(S.cur-1)}
 
-let previewTimer=null;
-function togglePreview() {
-  const btn=document.getElementById('preview-btn');
-  if(previewTimer) { stopPreview(); return; }
-  goSlide(0);
-  btn.innerHTML='&#9724; Stop';btn.style.background='var(--accent)';btn.style.color='#fff';
-  previewTimer=setInterval(()=>{
-    if(S.cur>=S.slides.length-1){ stopPreview(); return; }
-    goSlide(S.cur+1);
-  },2000);
-}
-function stopPreview() {
-  clearInterval(previewTimer);previewTimer=null;
-  const btn=document.getElementById('preview-btn');
-  btn.innerHTML='&#9654; Preview';btn.style.background='var(--bg3)';btn.style.color='var(--text)';
-}
 
 // ==================== CONTROLS ====================
 function initThemeGrid() {
