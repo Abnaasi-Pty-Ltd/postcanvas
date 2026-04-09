@@ -365,8 +365,8 @@ function newBlock(type) {
     'cta-box':{keyword:'KEYWORD',hint:'comment this word',subHint:"I'll DM you the framework"},
     'quote-block':{text:'Your quote here.',attribution:'Author Name'},
     'tag-pills-footer':{tags:'#Tag1, #Tag2, #Tag3'},
-    'image-block':{imageData:''},
-    'image-split':{text:'Your headline text here.',imageData:''},
+    'image-block':{imageData:'',imageFit:'cover',imagePosX:50,imagePosY:50,imageScale:100},
+    'image-split':{text:'Your headline text here.',imageData:'',imageFit:'cover',imagePosX:50,imagePosY:50,imageScale:100},
     'inline-code':{code:'npm pack --dry-run',description:'Run this before publishing'},
     'highlight-bar':{text:'This is the key takeaway.'},
     'diagram-flow':{labels:'Step 1, Step 2, Step 3, Step 4'}
@@ -670,20 +670,25 @@ function renderBlock(block,t,font,themeKey) {
           `<span style="font-family:${mono};font-size:7.5px;padding:4px 10px;border-radius:14px;border:1px solid ${CBB};color:${T2};letter-spacing:.5px">${tag}</span>`
         ).join('')}</div>`;
 
-    case 'image-block':
-      return block.imageData
-        ?`<div style="width:100%;height:180px;border-radius:6px;overflow:hidden"><img src="${block.imageData}" style="width:100%;height:100%;object-fit:cover" crossorigin="anonymous"/></div>`
-        :`<div style="width:100%;height:120px;border:2px dashed ${CBB};border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${mono};font-size:8px;color:${T3}">No image uploaded</div>`;
+    case 'image-block': {
+      if(!block.imageData) return `<div style="width:100%;min-height:140px;border:2px dashed ${CBB};border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${mono};font-size:8px;color:${T3}">No image uploaded</div>`;
+      const ibFit=block.imageFit||'cover', ibPx=block.imagePosX??50, ibPy=block.imagePosY??50, ibSc=block.imageScale||100;
+      const ibSize=ibFit==='contain'?(ibSc>100?ibSc+'%':'contain'):ibFit==='fill'?'100% 100%':(ibSc>100?ibSc+'%':ibFit);
+      return `<div style="width:100%;height:180px;border-radius:6px;overflow:hidden;background-image:url('${block.imageData}');background-size:${ibSize};background-position:${ibPx}% ${ibPy}%;background-repeat:no-repeat"></div>`;
+    }
 
-    case 'image-split':
+    case 'image-split': {
+      const isFit=block.imageFit||'cover', isPx=block.imagePosX??50, isPy=block.imagePosY??50, isSc=block.imageScale||100;
+      const isSize=isFit==='contain'?(isSc>100?isSc+'%':'contain'):isFit==='fill'?'100% 100%':(isSc>100?isSc+'%':isFit);
+      const imgPanel=block.imageData
+        ?`<div style="width:100%;height:100%;background-image:url('${block.imageData}');background-size:${isSize};background-position:${isPx}% ${isPy}%;background-repeat:no-repeat"></div>`
+        :`<div style="width:100%;height:100%;background:${CB};border:2px dashed ${CBB};border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${mono};font-size:8px;color:${T3}">No image</div>`;
       return `<div style="display:flex;gap:10px;align-items:stretch">
         <div style="flex:0.45;display:flex;flex-direction:column;justify-content:center"><div style="font-family:${ff};font-size:clamp(16px,3vw,22px);font-weight:900;color:${TX};line-height:1.15">${block.text||''}</div></div>
-        <div style="flex:0.55;border-radius:6px;overflow:hidden;min-height:120px">${
-          block.imageData
-            ?`<img src="${block.imageData}" style="width:100%;height:100%;object-fit:cover" crossorigin="anonymous"/>`
-            :`<div style="width:100%;height:100%;background:${CB};border:2px dashed ${CBB};border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${mono};font-size:8px;color:${T3}">No image</div>`
+        <div style="flex:0.55;border-radius:6px;overflow:hidden;min-height:140px">${imgPanel
         }</div>
       </div>`;
+    }
 
     case 'inline-code':
       return `<div style="background:rgba(0,0,0,0.15);border-left:3px solid ${A};border-radius:4px;padding:8px 10px">
@@ -873,6 +878,30 @@ function renderFields() {
     </div>`;
 }
 
+function imgControls(si,bi,b) {
+  const fit=b.imageFit||'cover', px=b.imagePosX??50, py=b.imagePosY??50, sc=b.imageScale||100;
+  return `<div style="border:1px solid var(--border);border-radius:4px;padding:6px;margin-top:4px">
+    <label class="lbl">Fit</label>
+    <div class="pills" style="gap:3px;margin-bottom:6px">
+      <div class="pill${fit==='cover'?' on':''}" onclick="updBlock(${si},${bi},'imageFit','cover');renderFields()">Cover</div>
+      <div class="pill${fit==='contain'?' on':''}" onclick="updBlock(${si},${bi},'imageFit','contain');renderFields()">Contain</div>
+      <div class="pill${fit==='fill'?' on':''}" onclick="updBlock(${si},${bi},'imageFit','fill');renderFields()">Fill</div>
+    </div>
+    <div class="frow" style="margin-bottom:4px">
+      <div><label class="lbl">Horiz ${px}%</label><input type="range" min="0" max="100" value="${px}" style="width:100%" oninput="updBlock(${si},${bi},'imagePosX',parseInt(this.value));this.previousElementSibling.textContent='Horiz '+this.value+'%'"></div>
+      <div><label class="lbl">Vert ${py}%</label><input type="range" min="0" max="100" value="${py}" style="width:100%" oninput="updBlock(${si},${bi},'imagePosY',parseInt(this.value));this.previousElementSibling.textContent='Vert '+this.value+'%'"></div>
+    </div>
+    <label class="lbl">Zoom ${sc}%</label><input type="range" min="100" max="200" value="${sc}" style="width:100%;margin-bottom:4px" oninput="updBlock(${si},${bi},'imageScale',parseInt(this.value));this.previousElementSibling.textContent='Zoom '+this.value+'%'">
+    <button class="btn bg" style="width:100%;font-size:7.5px;padding:4px" onclick="resetImgBlock(${si},${bi})">Reset Position</button>
+  </div>`;
+}
+
+function resetImgBlock(si,bi) {
+  const b=S.slides[si].blocks[bi];
+  b.imageFit='cover';b.imagePosX=50;b.imagePosY=50;b.imageScale=100;
+  renderCanvas();renderFields();toast('Image reset');
+}
+
 function renderBlockFields(b,si,bi) {
   switch(b.type) {
     case 'sub-text':
@@ -923,10 +952,11 @@ function renderBlockFields(b,si,bi) {
       return `<label class="lbl">Tags (comma-separated)</label><input class="fi" value="${esc(b.tags||'')}" oninput="updBlock(${si},${bi},'tags',this.value)">`;
     case 'image-block':
       return `<button class="btn bg" style="width:100%;margin-bottom:4px" onclick="uploadBlockImage(${si},${bi})">${b.imageData?'\u2713 Replace Image':'Upload Image'}</button>
-        ${b.imageData?`<div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text3)">Image loaded (${Math.round(b.imageData.length/1024)}KB)</div>`:''}`;
+        ${b.imageData?`<div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--text3);margin-bottom:6px">Image loaded (${Math.round(b.imageData.length/1024)}KB)</div>`+imgControls(si,bi,b):''}`;
     case 'image-split':
       return `<label class="lbl">Left text</label><input class="fi" value="${esc(b.text||'')}" oninput="updBlock(${si},${bi},'text',this.value)">
-        <button class="btn bg" style="width:100%;margin-bottom:4px" onclick="uploadBlockImage(${si},${bi})">${b.imageData?'\u2713 Replace Image':'Upload Image'}</button>`;
+        <button class="btn bg" style="width:100%;margin-bottom:4px" onclick="uploadBlockImage(${si},${bi})">${b.imageData?'\u2713 Replace Image':'Upload Image'}</button>
+        ${b.imageData?imgControls(si,bi,b):''}`;
     case 'inline-code':
       return `<label class="lbl">Code</label><input class="fi" value="${esc(b.code||'')}" style="font-family:'JetBrains Mono',monospace" oninput="updBlock(${si},${bi},'code',this.value)">
         <label class="lbl">Description</label><input class="fi" value="${esc(b.description||'')}" oninput="updBlock(${si},${bi},'description',this.value)">`;
