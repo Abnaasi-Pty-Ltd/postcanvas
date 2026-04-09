@@ -1301,7 +1301,7 @@ function buildSlide(slide,idx,total,font) {
   const ftrHTML=`<div class="s-ftr" style="border-top:1px solid ${FB}">${footerLeft}${ftrLogo}${swipeHTML}</div>`;
 
   return `
-    <div class="sbg" style="background:${t.bg}"><div style="position:absolute;inset:0;overflow:hidden">${bgSVG}</div></div>
+    <div class="sbg" style="background:${slide.bgOverride||t.bg}"><div style="position:absolute;inset:0;overflow:hidden">${bgSVG}</div></div>
     <div class="scont" style="padding:${padding}">
       ${hdrHTML}
       <div class="s-body" style="justify-content:${{top:'flex-start',center:'center',bottom:'flex-end'}[slide.contentAlign||'center']}">
@@ -1446,6 +1446,14 @@ function renderFields() {
           <div class="pill${(s.contentAlign||'center')==='center'?' on':''}" onclick="updSlide(${si},'contentAlign','center')">Centre</div>
           <div class="pill${(s.contentAlign||'center')==='bottom'?' on':''}" onclick="updSlide(${si},'contentAlign','bottom')">Bottom</div>
         </div>
+      </div>
+      <div style="margin-bottom:8px">
+        <label class="lbl">Background override</label>
+        <div class="pills" style="gap:4px;margin-bottom:6px">
+          <div class="pill${!s.bgOverride?' on':''}" onclick="updSlide(${si},'bgOverride','');renderFields()">Global theme</div>
+          <div class="pill${s.bgOverride?' on':''}" onclick="if(!S.slides[${si}].bgOverride){updSlide(${si},'bgOverride','${t.bg}');renderFields();}">Custom colour</div>
+        </div>
+        ${s.bgOverride?`<input type="color" value="${s.bgOverride}" style="width:100%;height:28px;border:none;border-radius:var(--radius-sm);cursor:pointer" oninput="updSlide(${si},'bgOverride',this.value)">`:''}
       </div>
       <div style="margin-bottom:8px">
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
