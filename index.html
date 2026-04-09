@@ -619,6 +619,9 @@ function fontControls(si,bi,b) {
     <div><label class="lbl">Font family</label><select class="theme-sel" onchange="updBlock(${si},${bi},'fontFamily',this.value||null)" style="width:100%">${FONT_OPTIONS.map(f=>`<option value="${f.value}"${ffVal===f.value?' selected':''}>${f.label}</option>`).join('')}</select></div>
   </div>`;
 }
+function colorPick(si,bi,key,label,def) {
+  return `<div><label class="lbl">${label}</label><input type="color" value="${def}" oninput="updBlock(${si},${bi},'${key}',this.value)" style="width:100%;height:28px;border:1px solid var(--border2);border-radius:4px;background:none;cursor:pointer;padding:1px"></div>`;
+}
 
 // ==================== STATE ====================
 let S = {
@@ -841,39 +844,45 @@ function renderBlock(block,t,font,themeKey) {
   switch(block.type) {
     case 'sub-text': {
       let txt=block.text||'';
-      if(block.bold) txt=txt.replace(block.bold,`<span style="color:${TX};font-weight:600">${block.bold}</span>`);
+      const txColor=block.textColor||T2;
+      if(block.bold) txt=txt.replace(block.bold,`<span style="color:${block.textColor||TX};font-weight:600">${block.bold}</span>`);
       const fs=block.fontSize||10;
-      return `<div style="font-family:${bff||mono};font-size:${fs}px;color:${T2};border-left:2px solid ${A};padding-left:9px;line-height:1.65">${txt}</div>`;
+      return `<div style="font-family:${bff||mono};font-size:${fs}px;color:${txColor};border-left:2px solid ${A};padding-left:9px;line-height:1.65">${txt}</div>`;
     }
     case 'body-text': {
       const fs=block.fontSize||11;
-      return `<div style="font-family:${bff||sans};font-size:${fs}px;color:${T2};line-height:1.7">${block.text||''}</div>`;
+      const txColor=block.textColor||T2;
+      return `<div style="font-family:${bff||sans};font-size:${fs}px;color:${txColor};line-height:1.7">${block.text||''}</div>`;
     }
 
     case 'stat-row': {
       const stats=block.stats||[];
       const cols=Math.min(stats.length,3);
       const fs=block.fontSize||20;
+      const valColor=block.valueColor||A;
+      const lblColor=block.labelColor||T3;
       return `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:5px">${
         stats.map(s=>
-          `<div style="background:${CB};border:1px solid ${CBB};border-radius:6px;padding:9px 7px"><span style="font-family:${bff||ff};font-size:${fs}px;font-weight:900;color:${A};display:block">${s.value||''}</span><span style="font-family:${mono};font-size:7.5px;letter-spacing:1px;color:${T3};text-transform:uppercase;display:block;margin-top:2px">${s.label||''}</span></div>`
+          `<div style="background:${CB};border:1px solid ${CBB};border-radius:6px;padding:9px 7px"><span style="font-family:${bff||ff};font-size:${fs}px;font-weight:900;color:${valColor};display:block">${s.value||''}</span><div style="border-top:1px solid rgba(255,255,255,0.1);margin-top:3px;padding-top:3px"><span style="font-family:${mono};font-size:9px;letter-spacing:1px;color:${lblColor};text-transform:uppercase;display:block;opacity:0.85">${s.label||''}</span></div></div>`
         ).join('')}</div>`;
     }
 
     case 'bullet-box': {
       const bullets=block.bullets||[];
       const fs=block.fontSize||9.5;
+      const txColor=block.textColor||T2;
       return `<div style="background:${CB};border:1px solid ${CBB};border-radius:7px;padding:12px">
         <div style="font-family:${mono};font-size:7.5px;letter-spacing:2px;color:${T3};text-transform:uppercase;margin-bottom:9px">${block.label||''}</div>
-        ${bullets.map(b=>`<div style="font-family:${bff||mono};font-size:${fs}px;color:${T2};line-height:2.1"><span style="color:${A};margin-right:5px">\u2022</span>${b}</div>`).join('')}
+        ${bullets.map(b=>`<div style="font-family:${bff||mono};font-size:${fs}px;color:${txColor};line-height:2.1"><span style="color:${A};margin-right:5px">\u2022</span>${b}</div>`).join('')}
       </div>`;
     }
 
     case 'numbered-steps': {
       const steps=block.steps||[];
       const fs=block.fontSize||10.5;
+      const txColor=block.textColor||TX;
       return steps.map((s,i)=>
-        `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:${CB};border:1px solid ${CBB};border-radius:6px"><span style="font-family:${mono};font-size:11px;color:${A};font-weight:600;min-width:20px">0${i+1}</span><span style="font-family:${bff||sans};font-size:${fs}px;color:${TX};line-height:1.5">${s}</span></div>`
+        `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:${CB};border:1px solid ${CBB};border-radius:6px"><span style="font-family:${mono};font-size:11px;color:${A};font-weight:600;min-width:20px">0${i+1}</span><span style="font-family:${bff||sans};font-size:${fs}px;color:${txColor};line-height:1.5">${s}</span></div>`
       ).join('');
     }
 
@@ -936,13 +945,15 @@ function renderBlock(block,t,font,themeKey) {
       const isBreaking=themeKey==='breaking';
       const kw=block.keyword||'KEYWORD';
       const ctaFf=bff||ff;
-      const kwStyle=isBreaking
-        ?`font-family:${ctaFf};font-size:clamp(42px,8vw,64px);font-weight:900;color:${A};letter-spacing:4px;display:block;margin:10px 0 6px`
-        :`font-family:${ctaFf};font-size:clamp(26px,5vw,38px);font-weight:900;color:${TX};letter-spacing:5px;display:block;margin:7px 0 4px`;
+      const kwFs=block.fontSize?block.fontSize+'px':isBreaking?'clamp(42px,8vw,64px)':'clamp(26px,5vw,38px)';
+      const kwColor=block.keywordColor||(isBreaking?A:TX);
+      const hintColor=block.hintColor||T3;
+      const hintFs=block.fontSize?Math.round(block.fontSize*0.6)+'px':'7.5px';
+      const kwStyle=`font-family:${ctaFf};font-size:${kwFs};font-weight:900;color:${kwColor};letter-spacing:${isBreaking?'4':'5'}px;display:block;margin:${isBreaking?'10px 0 6px':'7px 0 4px'}`;
       return `<div style="background:${CB};border:1px solid ${CBB};border-radius:8px;padding:16px;text-align:center">
-        <div style="font-family:${mono};font-size:7.5px;letter-spacing:2px;color:${T3};text-transform:uppercase">${block.hint||'comment this word'}</div>
+        <div style="font-family:${mono};font-size:${hintFs};letter-spacing:2px;color:${hintColor};text-transform:uppercase">${block.hint||'comment this word'}</div>
         <span style="${kwStyle}">${kw}</span>
-        <div style="font-family:${mono};font-size:7.5px;letter-spacing:2px;color:${T3};text-transform:uppercase">${block.subHint||''}</div>
+        <div style="font-family:${mono};font-size:${hintFs};letter-spacing:2px;color:${hintColor};text-transform:uppercase">${block.subHint||''}</div>
       </div>`;
     }
 
@@ -1255,17 +1266,21 @@ function renderBlockFields(b,si,bi) {
     case 'sub-text':
       return `<label class="lbl">Text</label><textarea class="ft" oninput="updBlock(${si},${bi},'text',this.value)">${esc(b.text||'')}</textarea>
         <label class="lbl">Bold phrase</label><input class="fi" value="${esc(b.bold||'')}" oninput="updBlock(${si},${bi},'bold',this.value)">
-        ${fontControls(si,bi,b)}`;
+        ${fontControls(si,bi,b)}
+        <div class="frow" style="margin-top:4px">${colorPick(si,bi,'textColor','Text colour',b.textColor||'#b0a898')}</div>`;
     case 'body-text':
       return `<label class="lbl">Text</label><textarea class="ft" oninput="updBlock(${si},${bi},'text',this.value)">${esc(b.text||'')}</textarea>
-        ${fontControls(si,bi,b)}`;
+        ${fontControls(si,bi,b)}
+        <div class="frow" style="margin-top:4px">${colorPick(si,bi,'textColor','Text colour',b.textColor||'#b0a898')}</div>`;
     case 'stat-row': {
       const stats=b.stats||[];
       let h=stats.map((s,i)=>
         `<div class="frow"><div><label class="lbl">Stat ${i+1}</label><input class="fi" value="${esc(s.value||'')}" oninput="updBlockArrObj(${si},${bi},'stats',${i},'value',this.value)"></div><div><label class="lbl">Label</label><input class="fi" value="${esc(s.label||'')}" oninput="updBlockArrObj(${si},${bi},'stats',${i},'label',this.value)"></div><div style="display:flex;align-items:flex-end;padding-bottom:2px"><button class="blk-btn del" onclick="removeBlockArrItem(${si},${bi},'stats',${i})">\u00D7</button></div></div>`
       ).join('');
       h+=`<button class="btn bg" style="width:100%;font-size:8px;margin-top:4px" onclick="addBlockArrItem(${si},${bi},'stats')">+ Add Stat</button>`;
-      return h+fontControls(si,bi,b);
+      h+=fontControls(si,bi,b);
+      h+=`<div class="frow" style="margin-top:4px">${colorPick(si,bi,'valueColor','Value colour',b.valueColor||'#c76a25')}${colorPick(si,bi,'labelColor','Label colour',b.labelColor||'#706860')}</div>`;
+      return h;
     }
     case 'bullet-box': {
       let h=`<label class="lbl">Box label</label><input class="fi" value="${esc(b.label||'')}" oninput="updBlock(${si},${bi},'label',this.value)">`;
@@ -1274,7 +1289,9 @@ function renderBlockFields(b,si,bi) {
         `<div style="display:flex;gap:4px;align-items:center;margin-bottom:2px"><input class="fi" style="flex:1;margin:0" value="${esc(bul)}" oninput="updBlockArr(${si},${bi},'bullets',${i},this.value)"><button class="blk-btn del" onclick="removeBlockArrItem(${si},${bi},'bullets',${i})">\u00D7</button></div>`
       ).join('');
       h+=`<button class="btn bg" style="width:100%;font-size:8px;margin-top:4px" onclick="addBlockArrItem(${si},${bi},'bullets')">+ Add Bullet</button>`;
-      return h+fontControls(si,bi,b);
+      h+=fontControls(si,bi,b);
+      h+=`<div class="frow" style="margin-top:4px">${colorPick(si,bi,'textColor','Text colour',b.textColor||'#b0a898')}</div>`;
+      return h;
     }
     case 'numbered-steps': {
       const steps=b.steps||[];
@@ -1282,7 +1299,9 @@ function renderBlockFields(b,si,bi) {
         `<div style="display:flex;gap:4px;align-items:center;margin-bottom:2px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent);min-width:18px">0${i+1}</span><input class="fi" style="flex:1;margin:0" value="${esc(s)}" oninput="updBlockArr(${si},${bi},'steps',${i},this.value)"><button class="blk-btn del" onclick="removeBlockArrItem(${si},${bi},'steps',${i})">\u00D7</button></div>`
       ).join('');
       h+=`<button class="btn bg" style="width:100%;font-size:8px;margin-top:4px" onclick="addBlockArrItem(${si},${bi},'steps')">+ Add Step</button>`;
-      return h+fontControls(si,bi,b);
+      h+=fontControls(si,bi,b);
+      h+=`<div class="frow" style="margin-top:4px">${colorPick(si,bi,'textColor','Text colour',b.textColor||'#f0ece4')}</div>`;
+      return h;
     }
     case 'step-pill-tag':
       return `<label class="lbl">Pill text</label><input class="fi" value="${esc(b.text||'')}" oninput="updBlock(${si},${bi},'text',this.value)">
@@ -1328,7 +1347,8 @@ function renderBlockFields(b,si,bi) {
       return `<label class="lbl">CTA keyword</label><input class="fi" value="${esc(b.keyword||'')}" oninput="updBlock(${si},${bi},'keyword',this.value)">
         <label class="lbl">Top hint</label><input class="fi" value="${esc(b.hint||'')}" oninput="updBlock(${si},${bi},'hint',this.value)">
         <label class="lbl">Bottom hint</label><input class="fi" value="${esc(b.subHint||'')}" oninput="updBlock(${si},${bi},'subHint',this.value)">
-        ${fontControls(si,bi,b)}`;
+        ${fontControls(si,bi,b)}
+        <div class="frow" style="margin-top:4px">${colorPick(si,bi,'keywordColor','Keyword colour',b.keywordColor||'#f0ece4')}${colorPick(si,bi,'hintColor','Hint colour',b.hintColor||'#706860')}</div>`;
     case 'quote-block':
       return `<label class="lbl">Quote</label><textarea class="ft" oninput="updBlock(${si},${bi},'text',this.value)">${esc(b.text||'')}</textarea>
         <label class="lbl">Attribution</label><input class="fi" value="${esc(b.attribution||'')}" oninput="updBlock(${si},${bi},'attribution',this.value)">
