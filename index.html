@@ -1716,9 +1716,9 @@ function capFormat(type) {
   if (!selected) return;
   let replacement;
   if (type === 'bold') {
-    replacement = toBoldUnicode(selected);
+    replacement = isBoldUnicode(selected) ? fromBoldUnicode(selected) : toBoldUnicode(selected);
   } else {
-    replacement = toItalicUnicode(selected);
+    replacement = isItalicUnicode(selected) ? fromItalicUnicode(selected) : toItalicUnicode(selected);
   }
   ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
   ta.selectionStart = start;
@@ -1729,25 +1729,35 @@ function capFormat(type) {
 }
 
 function toBoldUnicode(str) {
-  const boldMap = {};
-  for (let i = 0; i < 26; i++) {
-    boldMap[String.fromCharCode(65 + i)] = String.fromCodePoint(0x1D400 + i);
-    boldMap[String.fromCharCode(97 + i)] = String.fromCodePoint(0x1D41A + i);
-  }
-  for (let i = 0; i < 10; i++) {
-    boldMap[String.fromCharCode(48 + i)] = String.fromCodePoint(0x1D7CE + i);
-  }
-  return [...str].map(c => boldMap[c] || c).join('');
+  const m={};
+  for(let i=0;i<26;i++){m[String.fromCharCode(65+i)]=String.fromCodePoint(0x1D400+i);m[String.fromCharCode(97+i)]=String.fromCodePoint(0x1D41A+i);}
+  for(let i=0;i<10;i++){m[String.fromCharCode(48+i)]=String.fromCodePoint(0x1D7CE+i);}
+  return [...str].map(c=>m[c]||c).join('');
+}
+function fromBoldUnicode(str) {
+  const m={};
+  for(let i=0;i<26;i++){m[String.fromCodePoint(0x1D400+i)]=String.fromCharCode(65+i);m[String.fromCodePoint(0x1D41A+i)]=String.fromCharCode(97+i);}
+  for(let i=0;i<10;i++){m[String.fromCodePoint(0x1D7CE+i)]=String.fromCharCode(48+i);}
+  return [...str].map(c=>m[c]||c).join('');
+}
+function isBoldUnicode(str) {
+  return [...str].some(c=>{const cp=c.codePointAt(0);return(cp>=0x1D400&&cp<=0x1D419)||(cp>=0x1D41A&&cp<=0x1D433)||(cp>=0x1D7CE&&cp<=0x1D7D7);});
 }
 
 function toItalicUnicode(str) {
-  const italicMap = {};
-  for (let i = 0; i < 26; i++) {
-    italicMap[String.fromCharCode(65 + i)] = String.fromCodePoint(0x1D434 + i);
-    italicMap[String.fromCharCode(97 + i)] = String.fromCodePoint(0x1D44E + i);
-  }
-  italicMap['h'] = String.fromCodePoint(0x210E);
-  return [...str].map(c => italicMap[c] || c).join('');
+  const m={};
+  for(let i=0;i<26;i++){m[String.fromCharCode(65+i)]=String.fromCodePoint(0x1D434+i);m[String.fromCharCode(97+i)]=String.fromCodePoint(0x1D44E+i);}
+  m['h']=String.fromCodePoint(0x210E);
+  return [...str].map(c=>m[c]||c).join('');
+}
+function fromItalicUnicode(str) {
+  const m={};
+  for(let i=0;i<26;i++){m[String.fromCodePoint(0x1D434+i)]=String.fromCharCode(65+i);m[String.fromCodePoint(0x1D44E+i)]=String.fromCharCode(97+i);}
+  m[String.fromCodePoint(0x210E)]='h';
+  return [...str].map(c=>m[c]||c).join('');
+}
+function isItalicUnicode(str) {
+  return [...str].some(c=>{const cp=c.codePointAt(0);return(cp>=0x1D434&&cp<=0x1D44D)||(cp>=0x1D44E&&cp<=0x1D467)||cp===0x210E;});
 }
 
 function generateCaption() {
