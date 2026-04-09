@@ -536,14 +536,16 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
     <div class="ptit">Caption Editor</div>
     <div class="cap-toolbar">
       <button class="cap-tbtn" onclick="capFormat('bold')" title="Bold (Unicode)"><b>B</b></button>
-      <button class="cap-tbtn" onclick="capFormat('italic')" title="Italic"><i>I</i></button>
+      <button class="cap-tbtn" onclick="capFormat('italic')" title="Italic (Unicode)"><i>I</i></button>
       <button class="cap-tbtn" onclick="capInsert('\u2022 ')" title="Bullet point">&bull;</button>
       <button class="cap-tbtn" onclick="capInsert(String.fromCharCode(10))" title="Line break">&crarr;</button>
-      <button class="cap-tbtn" id="cap-preview-btn" onclick="toggleCapPreview()" title="Preview / Edit" style="margin-left:auto;font-size:9px;letter-spacing:.5px">Preview</button>
     </div>
-    <textarea class="cap-textarea" id="cap-text" placeholder="Write your LinkedIn caption here..." oninput="updateCapCounter();S.caption=this.value"></textarea>
-    <div id="cap-preview" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);line-height:1.65;white-space:pre-wrap;word-wrap:break-word;min-height:120px;max-height:220px;overflow-y:auto"></div>
+    <textarea class="cap-textarea" id="cap-text" placeholder="Write your LinkedIn caption here..." oninput="updateCapCounter();S.caption=this.value;updateCapPreview()"></textarea>
     <div class="cap-counter" id="cap-counter">0 / 3,000</div>
+    <div style="margin-top:6px">
+      <label class="lbl">LinkedIn Preview</label>
+      <div id="cap-preview" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:var(--text);line-height:1.55;white-space:pre-wrap;word-wrap:break-word;min-height:60px;max-height:180px;overflow-y:auto"><span style="color:var(--text3);font-size:11px">Start typing above to see preview...</span></div>
+    </div>
     <div class="cap-emoji-row">
       <button class="cap-emoji" onclick="capInsert('&#x1F680;')">&#x1F680;</button>
       <button class="cap-emoji" onclick="capInsert('&#x1F4A1;')">&#x1F4A1;</button>
@@ -1668,26 +1670,20 @@ function renderCaption() {
   const ta = document.getElementById('cap-text');
   if (ta && S.caption) ta.value = S.caption;
   updateCapCounter();
+  updateCapPreview();
   renderHashtagSets();
   renderChecklist();
 }
 
-let capPreviewOn=false;
-function toggleCapPreview() {
-  capPreviewOn=!capPreviewOn;
+function updateCapPreview() {
   const ta=document.getElementById('cap-text');
   const pv=document.getElementById('cap-preview');
-  const btn=document.getElementById('cap-preview-btn');
-  if(capPreviewOn) {
-    ta.style.display='none';pv.style.display='block';btn.textContent='Edit';
-    let html=esc(ta.value||'');
-    html=html.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
-    html=html.replace(/_(.+?)_/g,'<i>$1</i>');
-    html=html.replace(/\n/g,'<br>');
-    pv.innerHTML=html;
-  } else {
-    ta.style.display='';pv.style.display='none';btn.textContent='Preview';
-  }
+  if(!ta||!pv) return;
+  const val=ta.value||'';
+  if(!val) { pv.innerHTML='<span style="color:var(--text3);font-size:11px">Start typing above to see preview...</span>'; return; }
+  let html=esc(val);
+  html=html.replace(/\n/g,'<br>');
+  pv.innerHTML=html;
 }
 
 function updateCapCounter() {
@@ -1708,6 +1704,7 @@ function capInsert(text) {
   ta.selectionStart = ta.selectionEnd = start + text.length;
   S.caption = ta.value;
   updateCapCounter();
+  updateCapPreview();
 }
 
 function capFormat(type) {
@@ -1721,13 +1718,14 @@ function capFormat(type) {
   if (type === 'bold') {
     replacement = toBoldUnicode(selected);
   } else {
-    replacement = '_' + selected + '_';
+    replacement = toItalicUnicode(selected);
   }
   ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
   ta.selectionStart = start;
   ta.selectionEnd = start + replacement.length;
   S.caption = ta.value;
   updateCapCounter();
+  updateCapPreview();
 }
 
 function toBoldUnicode(str) {
@@ -1740,6 +1738,16 @@ function toBoldUnicode(str) {
     boldMap[String.fromCharCode(48 + i)] = String.fromCodePoint(0x1D7CE + i);
   }
   return [...str].map(c => boldMap[c] || c).join('');
+}
+
+function toItalicUnicode(str) {
+  const italicMap = {};
+  for (let i = 0; i < 26; i++) {
+    italicMap[String.fromCharCode(65 + i)] = String.fromCodePoint(0x1D434 + i);
+    italicMap[String.fromCharCode(97 + i)] = String.fromCodePoint(0x1D44E + i);
+  }
+  italicMap['h'] = String.fromCodePoint(0x210E);
+  return [...str].map(c => italicMap[c] || c).join('');
 }
 
 function generateCaption() {
@@ -1757,6 +1765,7 @@ function generateCaption() {
   ta.value = draft;
   S.caption = draft;
   updateCapCounter();
+  updateCapPreview();
   toast('Caption draft generated');
 }
 
@@ -1801,6 +1810,7 @@ function appendHashtags(tags) {
   S.caption = ta.value;
   ta.scrollTop = ta.scrollHeight;
   updateCapCounter();
+  updateCapPreview();
   toast('Hashtags added');
 }
 
