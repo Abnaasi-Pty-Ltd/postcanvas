@@ -448,16 +448,16 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
         </div>
         <div>
           <label class="lbl" id="gt-x-lbl">X position <span style="color:var(--text2)">0</span></label>
-          <input type="range" min="-100" max="100" value="0" id="gt-x" style="width:100%" oninput="S.ghostX=parseInt(this.value);document.getElementById('gt-x-lbl').lastChild.textContent=this.value;renderCanvas()">
+          <input type="range" min="-300" max="300" step="5" value="0" id="gt-x" style="width:100%" oninput="S.ghostX=parseInt(this.value);document.getElementById('gt-x-lbl').lastChild.textContent=this.value;renderCanvas()">
         </div>
         <div>
           <label class="lbl" id="gt-y-lbl">Y position <span style="color:var(--text2)">0</span></label>
-          <input type="range" min="-100" max="100" value="0" id="gt-y" style="width:100%" oninput="S.ghostY=parseInt(this.value);document.getElementById('gt-y-lbl').lastChild.textContent=this.value;renderCanvas()">
+          <input type="range" min="-300" max="300" step="5" value="0" id="gt-y" style="width:100%" oninput="S.ghostY=parseInt(this.value);document.getElementById('gt-y-lbl').lastChild.textContent=this.value;renderCanvas()">
         </div>
       </div>
       <div style="margin-top:6px">
-        <label class="lbl" id="gt-rot-lbl">Rotation <span style="color:var(--text2)">-15&deg;</span></label>
-        <input type="range" min="-45" max="45" value="-15" id="gt-rot" style="width:100%" oninput="S.ghostRotation=parseInt(this.value);document.getElementById('gt-rot-lbl').lastChild.textContent=this.value+'\u00b0';renderCanvas()">
+        <label class="lbl" id="gt-rot-lbl">Rotation <span style="color:var(--text2)">0&deg;</span></label>
+        <input type="range" min="-45" max="45" value="0" id="gt-rot" style="width:100%" oninput="S.ghostRotation=parseInt(this.value);document.getElementById('gt-rot-lbl').lastChild.textContent=this.value+'\u00b0';renderCanvas()">
       </div>
       <div style="display:flex;gap:6px;margin-top:6px">
         <div style="flex:1">
@@ -819,7 +819,7 @@ let S = {
   ghostOpacity:10,
   ghostX:0,
   ghostY:0,
-  ghostRotation:-15,
+  ghostRotation:0,
   ghostFont:'',
   ghostColor:'',
   hashtagSets:[
@@ -1091,11 +1091,12 @@ function getBG(bgStyle,themeKey) {
     const gt=S.ghostText||S.tag||'YOUR BRAND';
     const gs=S.ghostSize||120;
     const go=S.ghostOpacity||10;
-    const gx=S.ghostX||0, gy=S.ghostY||0;
-    const gr=S.ghostRotation||-15;
+    const gx=S.ghostX!=null?S.ghostX:0, gy=S.ghostY!=null?S.ghostY:0;
+    const gr=S.ghostRotation!=null?S.ghostRotation:0;
     const gf=S.ghostFont||'inherit';
     const gc=S.ghostColor||a;
-    return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="'${gf}',sans-serif" font-size="${gs}" font-weight="900" fill="${gc}" opacity="${go/100}" transform="translate(${gx}, ${gy}) rotate(${gr}, 230, 230)" style="user-select:none">${gt}</text></svg>`;
+    const tf=gr?`translate(${gx}, ${gy}) rotate(${gr})`:`translate(${gx}, ${gy})`;
+    return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="'${gf}',sans-serif" font-size="${gs}" font-weight="900" fill="${gc}" opacity="${go/100}" transform="${tf}" style="user-select:none">${gt}</text></svg>`;
   }
   if(bgStyle==='gradient') {
     const o=(GS.opacity/100).toFixed(2);
@@ -2323,7 +2324,7 @@ function syncProfileUI() {
   const gto=document.getElementById('gt-op');if(gto){gto.value=S.ghostOpacity||10;document.getElementById('gt-op-lbl').lastChild.textContent=(S.ghostOpacity||10)+'%';}
   const gtx=document.getElementById('gt-x');if(gtx){gtx.value=S.ghostX||0;document.getElementById('gt-x-lbl').lastChild.textContent=S.ghostX||0;}
   const gty=document.getElementById('gt-y');if(gty){gty.value=S.ghostY||0;document.getElementById('gt-y-lbl').lastChild.textContent=S.ghostY||0;}
-  const gtr=document.getElementById('gt-rot');if(gtr){gtr.value=S.ghostRotation!=null?S.ghostRotation:-15;document.getElementById('gt-rot-lbl').lastChild.textContent=(S.ghostRotation!=null?S.ghostRotation:-15)+'\u00b0';}
+  const gtr=document.getElementById('gt-rot');if(gtr){gtr.value=S.ghostRotation!=null?S.ghostRotation:0;document.getElementById('gt-rot-lbl').lastChild.textContent=(S.ghostRotation!=null?S.ghostRotation:0)+'\u00b0';}
   const gtf=document.getElementById('gt-font');if(gtf)gtf.value=S.ghostFont||'';
   const gtcl=document.getElementById('gt-color');if(gtcl)gtcl.value=S.ghostColor||'#c76a25';
 }
