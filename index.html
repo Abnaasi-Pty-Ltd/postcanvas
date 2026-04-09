@@ -1953,12 +1953,7 @@ function copyPrompt() {
 }
 
 function renderAll() {
-  try{renderCanvas();}catch(e){console.error('renderCanvas:',e);}
-  try{renderTabs();}catch(e){console.error('renderTabs:',e);}
-  try{renderFields();}catch(e){console.error('renderFields:',e);}
-  try{renderBrief();}catch(e){console.error('renderBrief:',e);}
-  try{renderCaption();}catch(e){console.error('renderCaption:',e);}
-  try{refreshDraftList();}catch(e){console.error('refreshDraftList:',e);}
+  renderCanvas();renderTabs();renderFields();renderBrief();renderCaption();refreshDraftList();
 }
 
 // ==================== NAVIGATION ====================
