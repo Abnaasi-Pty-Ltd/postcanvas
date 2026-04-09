@@ -313,6 +313,42 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
 <!-- LEFT PANEL -->
 <div class="pl" id="pl"><div class="resize-handle" id="pl-resize"></div><div class="pscroll">
 
+  <div class="psec" id="brand-kit-section">
+    <div class="ptit">Brand Kit</div>
+    <div class="frow" style="margin-bottom:6px">
+      <div><label class="lbl">Primary</label><input type="color" id="bk-primary" value="#c76a25" oninput="BK.primary=this.value" style="width:100%;height:24px;border:1px solid var(--border2);border-radius:4px;background:none;cursor:pointer;padding:1px"></div>
+      <div><label class="lbl">Secondary</label><input type="color" id="bk-secondary" value="#facb67" oninput="BK.secondary=this.value" style="width:100%;height:24px;border:1px solid var(--border2);border-radius:4px;background:none;cursor:pointer;padding:1px"></div>
+      <div><label class="lbl">Background</label><input type="color" id="bk-bg" value="#141414" oninput="BK.background=this.value" style="width:100%;height:24px;border:1px solid var(--border2);border-radius:4px;background:none;cursor:pointer;padding:1px"></div>
+      <div><label class="lbl">Text</label><input type="color" id="bk-text" value="#f0ece4" oninput="BK.text=this.value" style="width:100%;height:24px;border:1px solid var(--border2);border-radius:4px;background:none;cursor:pointer;padding:1px"></div>
+    </div>
+    <label class="lbl">Logo</label>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <button class="btn bg" style="font-size:8px;flex:1" onclick="uploadBrandLogo()" id="bk-logo-btn">Upload Logo</button>
+      <button class="btn bg" style="font-size:8px;padding:5px 8px" onclick="BK.logoData='';document.getElementById('bk-logo-preview').style.display='none';document.getElementById('bk-logo-btn').textContent='Upload Logo';renderCanvas()">Clear</button>
+    </div>
+    <div id="bk-logo-preview" style="display:none;margin-bottom:6px;text-align:center"><img id="bk-logo-img" style="max-height:40px;max-width:100%;border-radius:4px;border:1px solid var(--border)"></div>
+    <div class="frow" style="margin-bottom:6px">
+      <div>
+        <label class="lbl">Position</label>
+        <select class="theme-sel" id="bk-pos" style="width:100%" onchange="BK.logoPos=this.value;renderCanvas()">
+          <option value="bottom-left">Bottom left</option>
+          <option value="bottom-right">Bottom right</option>
+          <option value="top-left">Top left</option>
+          <option value="top-right">Top right</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Size (px)</label>
+        <input class="fi" type="number" id="bk-size" min="16" max="80" value="32" oninput="BK.logoSize=parseInt(this.value)||32;renderCanvas()" style="margin:0;padding:5px 8px">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><input type="checkbox" id="bk-all" checked onchange="BK.showOnAll=this.checked;renderCanvas()"><label for="bk-all" class="lbl" style="margin:0">Show logo on all slides</label></div>
+    <div style="display:flex;gap:5px">
+      <button class="btn bgreen" style="font-size:8px;flex:1" onclick="saveBK()">Save Kit</button>
+      <button class="btn ba" style="font-size:8px;flex:1" onclick="applyBrandTheme()">Apply to Theme</button>
+    </div>
+  </div>
+
   <div class="psec">
     <div class="ptit">Profile</div>
     <label class="lbl">Handle / name</label>
@@ -659,6 +695,12 @@ let S = {
 // ==================== GRADIENT STATE ====================
 let GS = {c1:'#c76a25', c2:'#facb67', c3:'#7a1c1c', dir:'radial', opacity:22};
 
+// ==================== BRAND KIT ====================
+let BK = {primary:'#c76a25', secondary:'#facb67', background:'#141414', text:'#f0ece4', logoData:'', logoPos:'bottom-left', logoSize:32, showOnAll:true};
+function loadBK(){try{const s=localStorage.getItem('postcanvas-brand-kit');if(s){BK={...BK,...JSON.parse(s)};}}catch{}}
+function saveBK(){localStorage.setItem('postcanvas-brand-kit',JSON.stringify(BK));toast('Brand Kit saved');}
+loadBK();
+
 // ==================== SLIDE TEMPLATES ====================
 const SLIDE_TEMPLATES = {
   'hook-simple': {
@@ -796,6 +838,61 @@ function applyGlowPreset(c1,c2,c3,dir,op) {
   renderCanvas();toast('Glow preset applied');
 }
 
+// ==================== BRAND KIT FUNCTIONS ====================
+function uploadBrandLogo() {
+  const input=document.createElement('input');
+  input.type='file';input.accept='image/*';
+  input.onchange=()=>{
+    const file=input.files[0];if(!file) return;
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      BK.logoData=e.target.result;
+      const prev=document.getElementById('bk-logo-preview');
+      const img=document.getElementById('bk-logo-img');
+      if(prev&&img){prev.style.display='block';img.src=BK.logoData;}
+      document.getElementById('bk-logo-btn').textContent='\u2713 Replace Logo';
+      renderCanvas();toast('Logo uploaded');
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function applyBrandTheme() {
+  const darken=(hex,amt)=>{const n=parseInt(hex.replace('#',''),16);const r=Math.max(0,(n>>16)-amt);const g=Math.max(0,((n>>8)&0xff)-amt);const b=Math.max(0,(n&0xff)-amt);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);};
+  const lighten=(hex,amt)=>{const n=parseInt(hex.replace('#',''),16);const r=Math.min(255,(n>>16)+amt);const g=Math.min(255,((n>>8)&0xff)+amt);const b=Math.min(255,(n&0xff)+amt);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);};
+  const bg=BK.background, accent=BK.primary, tx=BK.text;
+  const isLight=parseInt(bg.replace('#',''),16)>0x808080;
+  THEMES['brand-custom']={
+    name:'Brand Custom',bg:bg,accent:accent,text:tx,
+    text2:isLight?darken(tx,80):lighten(bg,90),
+    text3:isLight?darken(tx,140):lighten(bg,50),
+    card:isLight?darken(bg,10):lighten(bg,12),
+    cardB:isLight?darken(bg,25):lighten(bg,25),
+    ftrB:isLight?darken(bg,15):lighten(bg,15),
+    tagC:accent,ctrC:isLight?darken(bg,25):lighten(bg,30)
+  };
+  if(!TKEYS.includes('brand-custom')) TKEYS.push('brand-custom');
+  S.theme='brand-custom';
+  initThemeGrid();renderAll();toast('Brand theme applied!');
+}
+
+function initBrandKitUI() {
+  document.getElementById('bk-primary').value=BK.primary;
+  document.getElementById('bk-secondary').value=BK.secondary;
+  document.getElementById('bk-bg').value=BK.background;
+  document.getElementById('bk-text').value=BK.text;
+  document.getElementById('bk-pos').value=BK.logoPos;
+  document.getElementById('bk-size').value=BK.logoSize;
+  document.getElementById('bk-all').checked=BK.showOnAll;
+  if(BK.logoData) {
+    const prev=document.getElementById('bk-logo-preview');
+    const img=document.getElementById('bk-logo-img');
+    if(prev&&img){prev.style.display='block';img.src=BK.logoData;}
+    document.getElementById('bk-logo-btn').textContent='\u2713 Replace Logo';
+  }
+}
+
 // ==================== BG ENGINE ====================
 function getBG(bgStyle,themeKey) {
   const t=THEMES[themeKey], a=t.accent;
@@ -892,7 +989,10 @@ function renderBlock(block,t,font,themeKey) {
 
     case 'step-pill-tag': {
       const fs=block.fontSize||8.5;
-      return `<div style="display:flex;justify-content:center"><div style="display:inline-block;border:1.5px solid ${A};border-radius:20px;padding:5px 16px;font-family:${bff||mono};font-size:${fs}px;letter-spacing:2px;color:${A};text-transform:uppercase">${block.text||''}</div></div>`;
+      const pillColor=block.textColor||A;
+      const pillBorder=block.borderColor||A;
+      const pillBg=block.bgColor||'transparent';
+      return `<div style="display:flex;justify-content:center"><div style="display:inline-block;border:1.5px solid ${pillBorder};border-radius:20px;padding:5px 16px;font-family:${bff||mono};font-size:${fs}px;letter-spacing:2px;color:${pillColor};text-transform:uppercase;background:${pillBg}">${block.text||''}</div></div>`;
     }
 
     case 'code-block': {
@@ -944,11 +1044,11 @@ function renderBlock(block,t,font,themeKey) {
       const titleC=block.titleColor||TX;
       const bodyC=block.bodyColor||T2;
       return `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px">${
-        cards.map((c,ci)=>`<div style="background:${CB};border:1px solid ${ci===cards.length-1?A:CBB};border-radius:6px;padding:10px">
+        cards.map(c=>{const feat=c.featured;return `<div style="background:${CB};border:1px solid ${feat?A:CBB};border-radius:6px;padding:10px">
           <div style="font-size:16px;margin-bottom:5px">${c.icon||''}</div>
-          <div style="font-family:${bff||sans};font-size:${tFs}px;font-weight:700;color:${ci===cards.length-1?A:titleC};margin-bottom:3px">${c.title||''}</div>
+          <div style="font-family:${bff||sans};font-size:${tFs}px;font-weight:700;color:${feat?A:titleC};margin-bottom:3px">${c.title||''}</div>
           <div style="font-family:${bff||sans};font-size:${bFs}px;color:${bodyC};line-height:1.4">${c.body||''}</div>
-        </div>`).join('')}</div>`;
+        </div>`;}).join('')}</div>`;
     }
 
     case 'cta-box': {
@@ -1052,7 +1152,10 @@ function buildSlide(slide,idx,total,font) {
   const themeKey=slide.themeOverride||S.theme;
   const t=THEMES[themeKey];
   const A=t.accent,TX=t.text,T2=t.text2,T3=t.text3,FB=t.ftrB;
-  const ff=`'${font}',serif`, baseFs=FSIZES[font]||'clamp(28px,5.5vw,44px)';
+  const ff=`'${font}',serif`;
+  const hlFont=slide.hlFont||font;
+  const hlFf=`'${hlFont}',serif`;
+  const baseFs=FSIZES[hlFont]||'clamp(28px,5.5vw,44px)';
   const hlMult=HL_SIZES[slide.hlSize||'auto']||1;
   const hlLs=HL_SPACING[slide.letterSpacing||'normal']||'0';
   const hlFsOverride=slide.hlFontSize?slide.hlFontSize+'px':null;
@@ -1062,7 +1165,8 @@ function buildSlide(slide,idx,total,font) {
   const hlTransform=(hlOx||hlOy)?`;transform:translate(${hlOx}px,${hlOy}px)`:'';
   const mono="'JetBrains Mono',monospace";
   const bgSVG=getBG(S.bg,themeKey);
-  const hlHTML=hl(slide.headline||'',slide.accent||'',A,font);
+  const hlAccent=slide.accentOverride||A;
+  const hlHTML=hl(slide.headline||'',slide.accent||'',hlAccent,hlFont);
   const handle=S.handle, tag=S.tag;
   const swipe=idx<total-1?'swipe \u2192':'';
 
@@ -1080,13 +1184,22 @@ function buildSlide(slide,idx,total,font) {
   // Headline style (tech-dark uses gradient)
   const hlClass=isTechDark?'class="hl-gradient"':'';
   const hlStyle=isTechDark
-    ?`font-family:${ff};font-size:${fs};font-weight:900;line-height:${lh};letter-spacing:${hlLs};background:linear-gradient(135deg,#ff9a5c,#ff5520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px${hlTransform}`
-    :`font-family:${ff};font-size:${fs};font-weight:900;line-height:${lh};letter-spacing:${hlLs};color:${TX};margin-bottom:8px${hlTransform}`;
+    ?`font-family:${hlFf};font-size:${fs};font-weight:900;line-height:${lh};letter-spacing:${hlLs};background:linear-gradient(135deg,#ff9a5c,#ff5520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px${hlTransform}`
+    :`font-family:${hlFf};font-size:${fs};font-weight:900;line-height:${lh};letter-spacing:${hlLs};color:${TX};margin-bottom:8px${hlTransform}`;
 
   // Render blocks
   const blocksHTML=slide.blocks.map(b=>{const mt=b.topSpacing||0;const html=renderBlock(b,t,font,themeKey);return mt?`<div style="margin-top:${mt}px">${html}</div>`:html;}).join('');
 
   const padding=isLinenTut?'20px 22px 14px':'26px 26px 16px';
+
+  // Brand logo
+  let logoHTML='';
+  if(BK.logoData&&BK.showOnAll) {
+    const sz=BK.logoSize||32;
+    const pos=BK.logoPos||'bottom-left';
+    const posStyle=pos==='bottom-left'?'bottom:14px;left:16px':pos==='bottom-right'?'bottom:14px;right:16px':pos==='top-left'?'top:14px;left:16px':'top:14px;right:16px';
+    logoHTML=`<img src="${BK.logoData}" style="position:absolute;${posStyle};height:${sz}px;width:auto;object-fit:contain;z-index:5;pointer-events:none">`;
+  }
 
   return `
     <div class="sbg" style="background:${t.bg}"><div style="position:absolute;inset:0;overflow:hidden">${bgSVG}</div></div>
@@ -1100,7 +1213,7 @@ function buildSlide(slide,idx,total,font) {
         <div style="font-family:${mono};font-size:8px;color:${T3};line-height:1.5">LinkedIn<br><span style="color:${T2}">${handle}</span></div>
         <div style="font-family:${mono};font-size:8px;color:${T3};text-transform:uppercase;letter-spacing:1px">${swipe}</div>
       </div>
-    </div>`;
+    </div>${logoHTML}`;
 }
 
 // ==================== RENDER ====================
@@ -1203,6 +1316,10 @@ function renderFields() {
       <input class="fi" value="${esc(s.headline||'')}" oninput="updSlide(${si},'headline',this.value)">
       <label class="lbl">Accent word (italic)</label>
       <input class="fi" value="${esc(s.accent||'')}" placeholder="word in accent colour" oninput="updSlide(${si},'accent',this.value)">
+      <div class="frow" style="margin-bottom:6px">
+        <div><label class="lbl">Accent colour</label><input type="color" value="${s.accentOverride||THEMES[themeKey].accent}" oninput="updSlide(${si},'accentOverride',this.value)" style="width:100%;height:28px;border:1px solid var(--border2);border-radius:4px;background:none;cursor:pointer;padding:1px"></div>
+        <div><label class="lbl">Hl font</label><select class="theme-sel" onchange="updSlide(${si},'hlFont',this.value||null)" style="width:100%"><option value="">Global (${S.font})</option>${FONT_OPTIONS.filter(f=>f.value).map(f=>`<option value="${f.value}"${(s.hlFont||'')===f.value?' selected':''}>${f.label}</option>`).join('')}</select></div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
         <div>
           <label class="lbl">Hl size</label>
@@ -1321,7 +1438,9 @@ function renderBlockFields(b,si,bi) {
     }
     case 'step-pill-tag':
       return `<label class="lbl">Pill text</label><input class="fi" value="${esc(b.text||'')}" oninput="updBlock(${si},${bi},'text',this.value)">
-        ${fontControls(si,bi,b)}`;
+        ${fontControls(si,bi,b)}
+        <div class="frow" style="margin-top:4px">${colorPick(si,bi,'textColor','Text colour',b.textColor||'#c76a25')}${colorPick(si,bi,'borderColor','Border colour',b.borderColor||'#c76a25')}</div>
+        <div class="frow" style="margin-top:4px">${colorPick(si,bi,'bgColor','Background',b.bgColor||'#00000000')}</div>`;
     case 'code-block':
       return `<label class="lbl">Window title</label><input class="fi" value="${esc(b.title||'')}" oninput="updBlock(${si},${bi},'title',this.value)">
         <label class="lbl">Code</label><textarea class="ft" style="height:60px;font-family:'JetBrains Mono',monospace;font-size:10px" oninput="updBlock(${si},${bi},'code',this.value)">${esc(b.code||'')}</textarea>
@@ -1357,6 +1476,7 @@ function renderBlockFields(b,si,bi) {
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span class="lbl" style="margin:0">Card ${i+1}</span><button class="blk-btn del" onclick="removeBlockArrItem(${si},${bi},'cards',${i})">\u00D7</button></div>
           <div class="frow"><div><label class="lbl">Icon</label><input class="fi" value="${esc(c.icon||'')}" oninput="updBlockArrObj(${si},${bi},'cards',${i},'icon',this.value)"></div><div><label class="lbl">Title</label><input class="fi" value="${esc(c.title||'')}" oninput="updBlockArrObj(${si},${bi},'cards',${i},'title',this.value)"></div></div>
           <label class="lbl">Body</label><input class="fi" value="${esc(c.body||'')}" oninput="updBlockArrObj(${si},${bi},'cards',${i},'body',this.value)">
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px"><input type="checkbox" id="gc-feat-${si}-${bi}-${i}"${c.featured?' checked':''} onchange="updBlockArrObj(${si},${bi},'cards',${i},'featured',this.checked)"><label for="gc-feat-${si}-${bi}-${i}" class="lbl" style="margin:0">Featured (accent border)</label></div>
         </div>`
       ).join('');
       h+=`<button class="btn bg" style="width:100%;font-size:8px;margin-top:4px" onclick="addBlockArrItem(${si},${bi},'cards')">+ Add Card</button>`;
@@ -1985,7 +2105,7 @@ function authCheck() {
     sessionStorage.setItem('postcanvas-auth','1');
     document.getElementById('auth-overlay').style.display='none';
     document.getElementById('studio-wrap').style.display='flex';
-    initThemeGrid();renderAll();applyZoom();
+    initBrandKitUI();initThemeGrid();renderAll();applyZoom();
   } else {
     const inp=document.getElementById('auth-pw');
     const err=document.getElementById('auth-err');
@@ -2001,7 +2121,7 @@ function authCheck() {
 if(sessionStorage.getItem('postcanvas-auth')==='1') {
   document.getElementById('auth-overlay').style.display='none';
   document.getElementById('studio-wrap').style.display='flex';
-  initThemeGrid();renderAll();applyZoom();
+  initBrandKitUI();initThemeGrid();renderAll();applyZoom();
 } else {
   document.getElementById('auth-pw').focus();
 }
